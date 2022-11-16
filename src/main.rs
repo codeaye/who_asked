@@ -1,7 +1,7 @@
 use actix_files::NamedFile;
 use actix_web::{get, App, HttpRequest, HttpServer, Responder};
 use rand::{thread_rng, Rng};
-use std::path::Path;
+use std::{env, path::Path};
 
 const CAP: u8 = 20;
 
@@ -20,8 +20,12 @@ async fn index(req: HttpRequest) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let port = env::var("PORT")
+        .expect("$PORT is not set")
+        .parse::<u16>()
+        .unwrap();
     HttpServer::new(|| App::new().service(index))
-        .bind(("127.0.0.1", 8080))?
+        .bind(("127.0.0.1", port))?
         .run()
         .await
 }
