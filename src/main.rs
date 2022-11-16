@@ -21,11 +21,12 @@ async fn index(req: HttpRequest) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let port = env::var("PORT")
-        .expect("$PORT is not set")
+        .unwrap_or("8000".to_string())
         .parse::<u16>()
         .unwrap();
+    println!("Listening on port {}", port);
     HttpServer::new(|| App::new().service(index))
-        .bind(("127.0.0.1", port))?
+        .bind(("0.0.0.0", port))?
         .run()
         .await
 }
