@@ -1,12 +1,12 @@
 use actix_files::NamedFile;
-use actix_web::{get, App, HttpRequest, HttpServer, Responder};
+use actix_web::{get, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use rand::{thread_rng, Rng};
 use std::{env, path::Path};
 
 const CAP: u8 = 20;
 
 #[get("/")]
-async fn index(req: HttpRequest) -> impl Responder {
+async fn image(req: HttpRequest) -> impl Responder {
     let file = NamedFile::open_async(
         Path::new("images")
             .join(thread_rng().gen_range(0..=CAP).to_string())
@@ -18,6 +18,13 @@ async fn index(req: HttpRequest) -> impl Responder {
     file.into_response(&req)
 }
 
+#[get("/discord")]
+async fn discord(_req: HttpRequest) -> impl Responder {
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(include_str!("discord.html"))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let port = env::var("PORT")
@@ -25,7 +32,7 @@ async fn main() -> std::io::Result<()> {
         .parse::<u16>()
         .unwrap();
     println!("Listening on port {}", port);
-    HttpServer::new(|| App::new().service(index))
+    HttpServer::new(|| App::new().service(image).service(discord))
         .bind(("0.0.0.0", port))?
         .run()
         .await
